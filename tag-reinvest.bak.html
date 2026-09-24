@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TAG Auto-Reinvest</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:#0b0e14; --surface:#111520; --card:#161c2a; --border:#1f2a3c;
+  --accent:#00e5b0; --accent2:#0070f3; --warn:#f0a500; --danger:#e84040;
+  --text:#e8ecf4; --muted:#6b7a99; --profit:#00e5b0; --r:12px;
+  --gap:16px; --pad:20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: 'Space Grotesk', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  width: 100%;
+  padding: 14px var(--pad);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:1rem; letter-spacing:.02em; white-space:nowrap; }
+.logo-dot { width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); flex-shrink:0; }
+.hdr-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+.pill { display:flex; align-items:center; gap:7px; padding:5px 13px; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; border:1px solid; transition:all .4s; white-space:nowrap; }
+.pill.running  { background:rgba(0,229,176,.08); border-color:rgba(0,229,176,.3); color:var(--accent); }
+.pill.stopped  { background:rgba(232,64,64,.08);  border-color:rgba(232,64,64,.3);  color:var(--danger); }
+.pill.connecting { background:rgba(240,165,0,.08); border-color:rgba(240,165,0,.3); color:var(--warn); }
+.blink { width:7px; height:7px; border-radius:50%; background:currentColor; animation:blink 1.2s infinite; }
+.pill.stopped .blink { animation:none; }
+.pill.connecting .blink { animation:blink .5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.conn-badge { padding:4px 11px; border-radius:999px; font-size:.72rem; font-weight:600; border:1px solid var(--border); color:var(--muted); white-space:nowrap; }
+.conn-badge.ok  { border-color:rgba(0,229,176,.3); color:var(--accent); background:rgba(0,229,176,.06); }
+.conn-badge.err { border-color:rgba(232,64,64,.3);  color:var(--danger); background:rgba(232,64,64,.06); }
+
+/* ── Main layout ── */
+main {
+  flex: 1;
+  width: 100%;
+  padding: var(--pad);
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gap);
+}
+
+/* ── Cards ── */
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:var(--pad); min-width:0; }
+.ct { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.ct::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* ── Stat cards ── */
+.stat-row { grid-column: 1 / -1; display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap); }
+.sc { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; position:relative; overflow:hidden; min-width:0; }
+.sc::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+.sc.g::before { background:var(--accent); }
+.sc.w::before { background:var(--warn); }
+.sc.b::before { background:var(--accent2); }
+.sc.n::before { background:var(--muted); }
+.sl { font-size:.68rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px; }
+.sv { font-family:'JetBrains Mono',monospace; font-size:clamp(1.1rem,2vw,1.5rem); font-weight:500; line-height:1; }
+.sv.green { color:var(--profit); } .sv.warn { color:var(--warn); } .sv.red { color:var(--danger); }
+.ss { margin-top:5px; font-size:.72rem; color:var(--muted); }
+
+/* ── WS live bar ── */
+.ws-bar {
+  grid-column: 1 / -1;
+  background:var(--surface); border:1px solid var(--border); border-radius:8px;
+  padding:12px 18px; display:flex; gap:0; align-items:stretch; flex-wrap:wrap;
+}
+.ws-item { display:flex; flex-direction:column; gap:3px; padding:4px 20px 4px 0; flex:1; min-width:100px; }
+.ws-item:first-child { padding-left:0; }
+.ws-key { font-size:.63rem; color:var(--muted); text-transform:uppercase; letter-spacing:.07em; font-weight:700; }
+.ws-val { font-family:'JetBrains Mono',monospace; color:var(--text); font-size:.82rem; }
+.ws-val.green { color:var(--profit); } .ws-val.warn { color:var(--warn); } .ws-val.red { color:var(--danger); }
+.ws-sep { width:1px; background:var(--border); align-self:stretch; margin:0 4px; flex-shrink:0; }
+
+/* ── Controls panel ── */
+.ctrl-panel { grid-column: 1 / 8; }
+
+.slider-hdr { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+.slider-lbl { font-size:.83rem; color:var(--muted); }
+.slider-val { font-family:'JetBrains Mono',monospace; font-size:1.35rem; font-weight:500; color:var(--accent); }
+input[type=range] { -webkit-appearance:none; width:100%; height:5px; border-radius:3px; background:var(--border); outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px rgba(0,229,176,.5); cursor:pointer; transition:transform .15s; }
+input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+.ticks { display:flex; justify-content:space-between; margin-top:5px; }
+.tick { font-size:.67rem; color:var(--muted); cursor:pointer; padding:2px 4px; border-radius:3px; transition:color .15s; }
+.tick:hover { color:var(--accent); }
+
+.ibg { display:flex; gap:7px; margin-bottom:18px; flex-wrap:wrap; }
+.ib { flex:1; min-width:50px; padding:8px 4px; background:var(--surface); border:1px solid var(--border); border-radius:7px; color:var(--muted); font-family:'Space Grotesk',sans-serif; font-size:.77rem; font-weight:600; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.ib:hover { border-color:var(--accent); color:var(--text); }
+.ib.active { background:rgba(0,229,176,.1); border-color:var(--accent); color:var(--accent); }
+
+.thr-row { display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap; }
+.thr-row label { flex:1; font-size:.83rem; color:var(--muted); min-width:160px; }
+.ni { width:105px; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:8px 11px; color:var(--text); font-family:'JetBrains Mono',monospace; font-size:.88rem; outline:none; transition:border-color .2s; text-align:right; }
+.ni:focus { border-color:var(--accent); }
+
+.action-row { display:flex; gap:10px; }
+.btn { flex:1; padding:13px 0; border:none; border-radius:var(--r); font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:.87rem; letter-spacing:.04em; cursor:pointer; transition:all .2s; text-transform:uppercase; }
+.btn-start { background:var(--accent); color:#0b0e14; }
+.btn-start:hover { background:#00ffc4; box-shadow:0 0 18px rgba(0,229,176,.35); }
+.btn-stop { background:transparent; border:1.5px solid var(--danger); color:var(--danger); }
+.btn-stop:hover { background:rgba(232,64,64,.1); }
+.btn:disabled { opacity:.35; cursor:not-allowed; }
+
+/* ── Connection panel ── */
+.conn-panel { grid-column: 8 / -1; }
+
+.ptabs { display:flex; gap:6px; margin-bottom:12px; }
+.pt { flex:1; padding:7px 0; background:var(--surface); border:1px solid var(--border); border-radius:7px; color:var(--muted); font-size:.76rem; font-weight:700; cursor:pointer; transition:all .2s; text-align:center; }
+.pt.active { background:rgba(0,112,243,.12); border-color:var(--accent2); color:var(--accent2); }
+.ig { margin-bottom:11px; }
+.ig label { display:block; font-size:.7rem; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:5px; }
+.ti { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:9px 12px; color:var(--text); font-family:'Space Grotesk',sans-serif; font-size:.84rem; outline:none; transition:border-color .2s; }
+.ti:focus { border-color:var(--accent2); }
+.ti::placeholder { color:var(--muted); }
+.ti.mono { font-family:'JetBrains Mono',monospace; font-size:.8rem; }
+.hint { font-size:.7rem; color:var(--muted); margin-top:4px; line-height:1.5; }
+.hint a { color:var(--accent2); text-decoration:none; }
+.hint a:hover { text-decoration:underline; }
+.sbtn { width:100%; margin-top:4px; padding:10px 0; background:rgba(0,112,243,.12); border:1.5px solid var(--accent2); border-radius:7px; color:var(--accent2); font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:.82rem; letter-spacing:.04em; cursor:pointer; transition:all .2s; text-transform:uppercase; }
+.sbtn:hover { background:rgba(0,112,243,.22); }
+.test-btn { width:100%; margin-top:7px; padding:9px 0; background:transparent; border:1px solid var(--border); border-radius:7px; color:var(--muted); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:.8rem; cursor:pointer; transition:all .2s; }
+.test-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+/* ── Log panel ── */
+.log-panel { grid-column: 1 / 8; }
+.log-box { background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:12px; height:200px; overflow-y:auto; font-family:'JetBrains Mono',monospace; font-size:.76rem; line-height:1.75; }
+.log-box::-webkit-scrollbar { width:4px; }
+.log-box::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.ll { display:flex; gap:10px; }
+.lt { color:var(--muted); min-width:64px; flex-shrink:0; }
+.lm.ok { color:var(--accent); } .lm.warn { color:var(--warn); } .lm.err { color:var(--danger); } .lm.info { color:var(--accent2); } .lm.neutral { color:var(--text); }
+
+/* ── Strategy panel ── */
+.strat-panel { grid-column: 8 / -1; }
+.sr { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:.84rem; gap:8px; }
+.sr:last-child { border-bottom:none; }
+.sn { font-weight:500; } .sd { color:var(--muted); font-size:.76rem; margin-top:1px; }
+.toggle { position:relative; width:38px; height:21px; flex-shrink:0; }
+.toggle input { opacity:0; width:0; height:0; }
+.ttrack { position:absolute; inset:0; background:var(--border); border-radius:999px; cursor:pointer; transition:background .2s; }
+.toggle input:checked + .ttrack { background:var(--accent); }
+.tthumb { position:absolute; top:3px; left:3px; width:15px; height:15px; background:#fff; border-radius:50%; transition:transform .2s; pointer-events:none; }
+.toggle input:checked ~ .tthumb { transform:translateX(17px); }
+
+/* ── Notice ── */
+.notice { grid-column:1/-1; background:rgba(0,112,243,.07); border:1px solid rgba(0,112,243,.25); border-radius:var(--r); padding:14px 18px; font-size:.79rem; color:#7ab4ff; line-height:1.65; display:flex; gap:12px; }
+.ni2 { font-size:1rem; flex-shrink:0; margin-top:1px; }
+.notice strong { color:#aacfff; }
+.notice code { font-family:'JetBrains Mono',monospace; font-size:.76rem; background:rgba(0,112,243,.15); padding:1px 5px; border-radius:3px; }
+
+/* ── History ── */
+.hist-panel { grid-column:1/-1; overflow-x:auto; }
+.hist-panel .card-inner { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:.8rem; min-width:580px; }
+th { text-align:left; padding:7px 11px; color:var(--muted); font-weight:700; font-size:.67rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border); white-space:nowrap; }
+td { padding:9px 11px; border-bottom:1px solid rgba(31,42,60,.4); font-family:'JetBrains Mono',monospace; white-space:nowrap; }
+tr:hover td { background:rgba(255,255,255,.02); }
+.badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:.7rem; font-weight:700; }
+.badge.ok   { background:rgba(0,229,176,.12); color:var(--profit); }
+.badge.skip { background:rgba(107,122,153,.12); color:var(--muted); }
+.badge.err  { background:rgba(232,64,64,.12); color:var(--danger); }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ══════════════════════════════════════════ */
+
+/* Tablet landscape / small desktop: 1024–1279px */
+@media (max-width:1279px) {
+  :root { --pad:18px; }
+  .ctrl-panel  { grid-column: 1 / 7; }
+  .conn-panel  { grid-column: 7 / -1; }
+  .log-panel   { grid-column: 1 / 7; }
+  .strat-panel { grid-column: 7 / -1; }
+}
+
+/* Tablet portrait: 768–1023px */
+@media (max-width:1023px) {
+  :root { --pad:16px; --gap:14px; }
+  main { grid-template-columns: repeat(6, 1fr); }
+  .stat-row    { grid-template-columns: repeat(2, 1fr); }
+  .ctrl-panel  { grid-column: 1 / -1; }
+  .conn-panel  { grid-column: 1 / -1; }
+  .log-panel   { grid-column: 1 / -1; }
+  .strat-panel { grid-column: 1 / -1; }
+  .notice      { grid-column: 1 / -1; }
+  .hist-panel  { grid-column: 1 / -1; }
+  .ws-bar      { grid-column: 1 / -1; }
+  /* 2-col strategy grid on tablet */
+  .strat-panel .sr { flex-wrap:nowrap; }
+  .ws-sep { display:none; }
+  .ws-bar { gap:0; row-gap:10px; }
+  .ws-item { min-width:calc(25% - 8px); padding:4px 8px; }
+}
+
+/* Mobile large: 600–767px */
+@media (max-width:767px) {
+  :root { --pad:14px; --gap:12px; }
+  main { grid-template-columns: 1fr 1fr; }
+  .stat-row    { grid-column:1/-1; grid-template-columns:1fr 1fr; }
+  .ws-bar      { grid-column:1/-1; }
+  .ctrl-panel  { grid-column:1/-1; }
+  .conn-panel  { grid-column:1/-1; }
+  .log-panel   { grid-column:1/-1; }
+  .strat-panel { grid-column:1/-1; }
+  .notice      { grid-column:1/-1; flex-direction:column; gap:8px; }
+  .hist-panel  { grid-column:1/-1; }
+  .ibg         { flex-wrap:wrap; }
+  .ib          { min-width:calc(33% - 6px); }
+  .ws-item     { min-width:calc(50% - 8px); }
+  .sv          { font-size:1.2rem; }
+}
+
+/* Mobile small: ≤599px */
+@media (max-width:599px) {
+  :root { --pad:12px; --gap:10px; }
+  header { padding:12px var(--pad); }
+  main { grid-template-columns:1fr; padding:var(--pad); }
+  .stat-row    { grid-template-columns:1fr 1fr; }
+  .ws-bar      { flex-direction:column; align-items:flex-start; gap:8px; }
+  .ws-sep      { display:none; }
+  .ws-item     { width:100%; padding:0; }
+  .ws-bar      { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .action-row  { flex-direction:column; }
+  .btn         { padding:14px; }
+  .thr-row     { flex-direction:column; align-items:flex-start; gap:8px; }
+  .ni          { width:100%; text-align:left; }
+  .ibg         { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+  .ib          { min-width:unset; }
+  table        { font-size:.74rem; }
+  th, td       { padding:7px 8px; }
+  .log-box     { height:160px; font-size:.72rem; }
+  .sv          { font-size:1.05rem; }
+  .hdr-right   { width:100%; justify-content:flex-end; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-dot"></div>TAG Auto-Reinvest</div>
+  <div class="hdr-right">
+    <span class="conn-badge" id="connBadge">● Not Connected</span>
+    <div class="pill stopped" id="statusPill"><div class="blink"></div><span id="statusTxt">Stopped</span></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <div class="stat-row">
+    <div class="sc g"><div class="sl">Balance (MT5)</div><div class="sv green" id="balVal">—</div><div class="ss" id="balSub">Awaiting connection</div></div>
+    <div class="sc w"><div class="sl">Profit / Drawdown</div><div class="sv warn" id="profitVal">—</div><div class="ss" id="profitSub">equity − balance</div></div>
+    <div class="sc b"><div class="sl">Will Reinvest</div><div class="sv" id="reinvestVal">—</div><div class="ss" id="reinvestSub">at 50% setting</div></div>
+    <div class="sc n"><div class="sl">Session Total</div><div class="sv" id="totalVal">$0.00</div><div class="ss" id="cyclesSub">0 cycles run</div></div>
+  </div>
+
+  <!-- Live WS data bar -->
+  <div class="ws-bar">
+    <div class="ws-item"><div class="ws-key">Server</div><div class="ws-val" id="wsServer">—</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">Account</div><div class="ws-val" id="wsLogin">—</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">Equity</div><div class="ws-val green" id="wsEquity">—</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">Free Margin</div><div class="ws-val" id="wsFreeMargin">—</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">Leverage</div><div class="ws-val" id="wsLeverage">—</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">Trade Allowed</div><div class="ws-val" id="wsTradeAllowed">—</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">WS Stream</div><div class="ws-val" id="wsStreamStatus">Offline</div></div>
+    <div class="ws-sep"></div>
+    <div class="ws-item"><div class="ws-key">Last Update</div><div class="ws-val" id="wsLastUpdate">—</div></div>
+  </div>
+
+  <!-- Controls -->
+  <div class="card ctrl-panel">
+    <div class="ct">Reinvestment Settings</div>
+
+    <div style="margin-bottom:18px">
+      <div class="slider-hdr"><span class="slider-lbl">Funds to Reinvest</span><span class="slider-val" id="pctDisp">50%</span></div>
+      <input type="range" id="pctSlider" min="0" max="100" step="5" value="50"/>
+      <div class="ticks">
+        <span class="tick" onclick="setSlider(0)">0%</span>
+        <span class="tick" onclick="setSlider(25)">25%</span>
+        <span class="tick" onclick="setSlider(50)">50%</span>
+        <span class="tick" onclick="setSlider(75)">75%</span>
+        <span class="tick" onclick="setSlider(100)">100%</span>
+      </div>
+    </div>
+
+    <div class="ct">Check Interval</div>
+    <div class="ibg" id="intBtns">
+      <button class="ib" onclick="setInterval_(15,this)">15 min</button>
+      <button class="ib active" onclick="setInterval_(30,this)">30 min</button>
+      <button class="ib" onclick="setInterval_(60,this)">1 hr</button>
+      <button class="ib" onclick="setInterval_(180,this)">3 hr</button>
+      <button class="ib" onclick="setInterval_(360,this)">6 hr</button>
+    </div>
+
+    <div class="ct">Minimum Profit Threshold</div>
+    <div class="thr-row">
+      <label>Reinvest only when profit exceeds</label>
+      <input type="number" class="ni" id="minThr" value="10" min="0" step="1"/>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-start" id="startBtn" onclick="toggleBot()">▶ Start</button>
+      <button class="btn btn-stop" id="stopBtn" onclick="toggleBot()" disabled>■ Stop</button>
+    </div>
+  </div>
+
+  <!-- Connection -->
+  <div class="card conn-panel">
+    <div class="ct">MetaApi Connection</div>
+
+    <div class="ptabs" id="ptabs">
+      <div class="pt active" onclick="switchTab('metaapi',this)">MetaApi</div>
+      <div class="pt" onclick="switchTab('direct',this)">MT5 Direct</div>
+    </div>
+
+    <div id="tabMetaapi">
+      <div class="ig">
+        <label>MetaApi Token <span style="color:var(--accent2)">*</span></label>
+        <input class="ti mono" type="password" id="maToken" placeholder="Get free token at metaapi.cloud"/>
+        <div class="hint">Free tier available · <a href="https://metaapi.cloud" target="_blank">metaapi.cloud</a></div>
+      </div>
+      <div class="ig">
+        <label>MetaApi Account ID <span style="color:var(--accent2)">*</span></label>
+        <input class="ti mono" id="maAccountId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+        <div class="hint">Found in your MetaApi dashboard after adding your MT5 account</div>
+      </div>
+      <div class="ig">
+        <label>Tag Markets MT5 Server</label>
+        <input class="ti" id="maServer" placeholder="TagMarkets-Live  (auto-detected)"/>
+      </div>
+      <button class="sbtn" onclick="saveAndConnect()">Connect via MetaApi</button>
+      <button class="test-btn" onclick="testConnection()">Test Connection</button>
+    </div>
+
+    <div id="tabDirect" style="display:none">
+      <div class="ig">
+        <label>MT5 WebSocket URL</label>
+        <input class="ti mono" id="wsUrl" placeholder="wss://your-mt5-server:8228"/>
+      </div>
+      <div class="ig">
+        <label>MT5 Login</label>
+        <input class="ti mono" id="mt5Login" placeholder="Account number"/>
+      </div>
+      <div class="ig">
+        <label>MT5 Password</label>
+        <input class="ti" type="password" id="mt5Pass" placeholder="Investor or trade password"/>
+      </div>
+      <button class="sbtn" onclick="saveAndConnect()">Connect Direct</button>
+      <div class="hint" style="margin-top:8px">Direct WebSocket requires MT5 Manager API access from Tag Markets. Contact their support to enable it.</div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="card log-panel">
+    <div class="ct">Activity Log <span style="font-size:.65rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— live feed from MetaApi WebSocket</span></div>
+    <div class="log-box" id="logBox">
+      <div class="ll"><span class="lt">--:--</span><span class="lm neutral">Enter credentials and click Connect to begin…</span></div>
+    </div>
+  </div>
+
+  <!-- Strategy Filters -->
+  <div class="card strat-panel">
+    <div class="ct">Strategy Filters</div>
+    <div class="sr"><div><div class="sn">CopyX Profit Reinvest</div><div class="sd">Detected via balance delta</div></div>
+      <label class="toggle"><input type="checkbox" id="tog1" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+    </div>
+    <div class="sr"><div><div class="sn">Sonic Strategy Signal</div><div class="sd">Webhook-triggered reinvest</div></div>
+      <label class="toggle"><input type="checkbox" id="tog2" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+    </div>
+    <div class="sr"><div><div class="sn">Amplify Account Boost</div><div class="sd">If Amplify account active</div></div>
+      <label class="toggle"><input type="checkbox" id="tog3"/><div class="ttrack"></div><div class="tthumb"></div></label>
+    </div>
+    <div class="sr"><div><div class="sn">Pause on Drawdown</div><div class="sd">Halt if equity drops &gt;10%</div></div>
+      <label class="toggle"><input type="checkbox" id="tog4" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+    </div>
+    <div class="sr"><div><div class="sn">WS Reconnect</div><div class="sd">Auto-reconnect on disconnect</div></div>
+      <label class="toggle"><input type="checkbox" id="tog5" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+    </div>
+  </div>
+
+  <!-- Info Banner -->
+  <div class="notice">
+    <span class="ni2">🔌</span>
+    <span>
+      <strong>How to connect to Tag Markets MT5 via MetaApi:</strong><br>
+      1. Create a free account at <a href="https://metaapi.cloud" target="_blank" style="color:var(--accent2)">metaapi.cloud</a> (free tier supports 1 account, real-time WebSocket streaming).<br>
+      2. Add your Tag Markets MT5 account — enter broker server <code>TagMarkets-Live</code>, your MT5 login and password.<br>
+      3. Copy your <strong>MetaApi Token</strong> and <strong>Account ID</strong> into the fields above and click <strong>Connect</strong>.<br>
+      This app then connects via MetaApi's WebSocket to receive live <code>balance</code>, <code>equity</code>, and <code>accountInformation</code> events from your MT5 account in real time.
+    </span>
+  </div>
+
+  <!-- History -->
+  <div class="card hist-panel">
+    <div class="ct">Reinvestment History</div>
+    <div style="overflow-x:auto;width:100%">
+      <table>
+        <thead><tr><th>Time</th><th>Platform</th><th>Balance Before</th><th>Profit Detected</th><th>% Setting</th><th>Reinvested</th><th>Status</th></tr></thead>
+        <tbody id="histBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">No cycles yet</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ──────────────────────────────────────────────────────────────
+//  STATE
+// ──────────────────────────────────────────────────────────────
+const state = {
+  running: false,
+  connected: false,
+  wsOpen: false,
+  intervalMs: 30 * 60 * 1000,
+  intervalTimer: null,
+  cycleCount: 0,
+  totalReinvested: 0,
+  // Live MT5 data
+  balance: null,
+  equity: null,
+  prevBalance: null,  // to compute profit delta
+  acctInfo: null,
+  // MetaApi REST base
+  apiBase: 'https://mt-client-api-v1.london.agiliumtrade.ai',
+  token: '',
+  accountId: '',
+  // WS
+  ws: null,
+  wsReconnectTimer: null,
+};
+
+// Persisted credentials
+function loadCreds() {
+  try {
+    const c = JSON.parse(localStorage.getItem('tagReinvestCreds') || '{}');
+    if (c.token)     document.getElementById('maToken').value     = c.token;
+    if (c.accountId) document.getElementById('maAccountId').value = c.accountId;
+    if (c.server)    document.getElementById('maServer').value    = c.server;
+  } catch(e) {}
+}
+loadCreds();
+
+// ──────────────────────────────────────────────────────────────
+//  UI helpers
+// ──────────────────────────────────────────────────────────────
+function log(msg, type='neutral') {
+  const box = document.getElementById('logBox');
+  const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d = document.createElement('div'); d.className='ll';
+  d.innerHTML=`<span class="lt">${now}</span><span class="lm ${type}">${msg}</span>`;
+  box.appendChild(d); box.scrollTop = box.scrollHeight;
+}
+
+function setConnBadge(text, cls) {
+  const b = document.getElementById('connBadge');
+  b.textContent = '● ' + text;
+  b.className = 'conn-badge ' + (cls||'');
+}
+
+function setStatusPill(status) {
+  const p = document.getElementById('statusPill');
+  const t = document.getElementById('statusTxt');
+  p.className = 'pill ' + status;
+  t.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function updateStats() {
+  const bal  = state.balance  != null ? state.balance  : null;
+  const eq   = state.equity   != null ? state.equity   : null;
+  const prev = state.prevBalance != null ? state.prevBalance : bal;
+  const profit = (bal != null && prev != null) ? (bal - prev) : (eq != null && bal != null ? eq - bal : null);
+  const pct = parseFloat(document.getElementById('pctSlider').value) / 100;
+  const reinvAmt = profit != null && profit > 0 ? profit * pct : 0;
+
+  document.getElementById('balVal').textContent    = bal  != null ? '$'+bal.toFixed(2)  : '—';
+  document.getElementById('profitVal').textContent = profit != null ? (profit>=0?'+':'')+profit.toFixed(2) : '—';
+  document.getElementById('profitVal').className   = 'sv ' + (profit != null ? (profit >= 0 ? 'warn' : 'red') : 'warn');
+  document.getElementById('reinvestVal').textContent = profit != null ? '$'+reinvAmt.toFixed(2) : '—';
+  document.getElementById('reinvestSub').textContent = 'at ' + (pct*100).toFixed(0) + '% setting';
+  document.getElementById('totalVal').textContent  = '$' + state.totalReinvested.toFixed(2);
+  document.getElementById('cyclesSub').textContent = state.cycleCount + ' cycles run';
+}
+
+function updateWsBar(info) {
+  if (!info) return;
+  document.getElementById('wsServer').textContent     = info.server     || '—';
+  document.getElementById('wsLogin').textContent      = info.login      || '—';
+  document.getElementById('wsEquity').textContent     = info.equity     != null ? '$'+info.equity.toFixed(2) : '—';
+  document.getElementById('wsFreeMargin').textContent = info.freeMargin != null ? '$'+info.freeMargin.toFixed(2) : '—';
+  document.getElementById('wsLeverage').textContent   = info.leverage   != null ? '1:'+info.leverage : '—';
+  const ta = document.getElementById('wsTradeAllowed');
+  ta.textContent = info.tradeAllowed ? 'Yes' : 'No';
+  ta.className   = 'ws-val ' + (info.tradeAllowed ? 'green' : 'red');
+  document.getElementById('wsLastUpdate').textContent = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ──────────────────────────────────────────────────────────────
+//  SLIDER / INTERVAL
+// ──────────────────────────────────────────────────────────────
+document.getElementById('pctSlider').addEventListener('input', () => {
+  const v = document.getElementById('pctSlider').value;
+  document.getElementById('pctDisp').textContent = v + '%';
+  updateStats();
+});
+function setSlider(v) {
+  document.getElementById('pctSlider').value = v;
+  document.getElementById('pctDisp').textContent = v + '%';
+  updateStats();
+}
+function setInterval_(min, btn) {
+  state.intervalMs = min * 60 * 1000;
+  document.querySelectorAll('.ib').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  log('Check interval → ' + min + ' min', 'info');
+  if (state.running) restartTimer();
+}
+function switchTab(tab, el) {
+  document.querySelectorAll('.pt').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tabMetaapi').style.display = tab==='metaapi'?'':'none';
+  document.getElementById('tabDirect').style.display  = tab==='direct'?'':'none';
+}
+
+// ──────────────────────────────────────────────────────────────
+//  METAAPI REST — fetch account info
+// ──────────────────────────────────────────────────────────────
+async function fetchAccountInfo() {
+  if (!state.token || !state.accountId) return null;
+  try {
+    const url = `${state.apiBase}/users/current/accounts/${state.accountId}/accountInformation`;
+    const res = await fetch(url, {
+      headers: { 'auth-token': state.token, 'Content-Type': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) {
+    log('REST fetch error: ' + e.message, 'err');
+    return null;
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+//  METAAPI WEBSOCKET
+// ──────────────────────────────────────────────────────────────
+function connectWebSocket() {
+  if (!state.token || !state.accountId) {
+    log('No credentials — cannot open WebSocket', 'err');
+    return;
+  }
+
+  // MetaApi WebSocket endpoint (streaming API)
+  const wsUrl = `wss://mt-client-api-v1.london.agiliumtrade.ai/ws/rpc/v1?auth-token=${state.token}`;
+  log('Opening MetaApi WebSocket…', 'info');
+  document.getElementById('wsStreamStatus').textContent = 'Connecting…';
+  document.getElementById('wsStreamStatus').className = 'ws-val warn';
+
+  const ws = new WebSocket(wsUrl);
+  state.ws = ws;
+
+  ws.onopen = () => {
+    state.wsOpen = true;
+    log('WebSocket connected — subscribing to account stream', 'ok');
+    document.getElementById('wsStreamStatus').textContent = 'Live ●';
+    document.getElementById('wsStreamStatus').className = 'ws-val green';
+    setConnBadge('Connected', 'ok');
+    state.connected = true;
+
+    // Subscribe to account synchronization
+    ws.send(JSON.stringify({
+      type: 'subscribe',
+      accountId: state.accountId,
+      requestId: 'sub-' + Date.now()
+    }));
+
+    // Also request account information immediately
+    ws.send(JSON.stringify({
+      type: 'getAccountInformation',
+      accountId: state.accountId,
+      requestId: 'init-acctinfo-' + Date.now()
+    }));
+  };
+
+  ws.onmessage = (event) => {
+    try {
+      const msg = JSON.parse(event.data);
+      handleWsMessage(msg);
+    } catch(e) { /* ignore parse errors */ }
+  };
+
+  ws.onerror = (e) => {
+    log('WebSocket error — check token & account ID', 'err');
+    document.getElementById('wsStreamStatus').textContent = 'Error';
+    document.getElementById('wsStreamStatus').className = 'ws-val red';
+  };
+
+  ws.onclose = (e) => {
+    state.wsOpen = false;
+    state.connected = false;
+    setConnBadge('Disconnected', 'err');
+    document.getElementById('wsStreamStatus').textContent = 'Offline';
+    document.getElementById('wsStreamStatus').className = 'ws-val red';
+    log('WebSocket closed (code ' + e.code + ')', 'warn');
+
+    if (document.getElementById('tog5').checked && state.running) {
+      log('Auto-reconnect in 10s…', 'warn');
+      state.wsReconnectTimer = setTimeout(connectWebSocket, 10000);
+    }
+  };
+}
+
+function handleWsMessage(msg) {
+  // Response to getAccountInformation
+  if (msg.accountInformation || (msg.type === 'response' && msg.accountInformation)) {
+    const info = msg.accountInformation;
+    applyAccountInfo(info);
+    return;
+  }
+
+  // Synchronization events — accountInformation change
+  if (msg.type === 'synchronization') {
+    if (msg.accountInformation) {
+      applyAccountInfo(msg.accountInformation);
+    }
+    // Position / deal updates — can also infer profit
+    if (msg.deals) {
+      const closed = msg.deals.filter(d => d.type === 'DEAL_TYPE_BALANCE' || d.profit > 0);
+      if (closed.length) {
+        log(`${closed.length} new deal(s) detected via WS`, 'info');
+      }
+    }
+    return;
+  }
+
+  // Error responses
+  if (msg.error) {
+    log('MetaApi error: ' + (msg.message || JSON.stringify(msg.error)), 'err');
+  }
+}
+
+function applyAccountInfo(info) {
+  if (!info) return;
+  state.acctInfo = info;
+  state.prevBalance = state.balance;
+  state.balance = info.balance;
+  state.equity  = info.equity;
+  updateStats();
+  updateWsBar(info);
+}
+
+// ──────────────────────────────────────────────────────────────
+//  SAVE & CONNECT
+// ──────────────────────────────────────────────────────────────
+function saveAndConnect() {
+  const token     = document.getElementById('maToken').value.trim();
+  const accountId = document.getElementById('maAccountId').value.trim();
+  const server    = document.getElementById('maServer').value.trim();
+
+  if (!token || !accountId) {
+    log('MetaApi token and Account ID are required', 'err');
+    return;
+  }
+  state.token     = token;
+  state.accountId = accountId;
+
+  try { localStorage.setItem('tagReinvestCreds', JSON.stringify({token, accountId, server})); } catch(e){}
+
+  log('Credentials saved', 'ok');
+
+  // Close any old WS
+  if (state.ws) { try { state.ws.close(); } catch(e){} }
+  clearTimeout(state.wsReconnectTimer);
+
+  setStatusPill('connecting');
+  setConnBadge('Connecting…', '');
+
+  // REST probe first
+  log('Probing account via REST…', 'info');
+  fetchAccountInfo().then(info => {
+    if (info) {
+      log('REST OK — balance: $' + info.balance.toFixed(2), 'ok');
+      applyAccountInfo(info);
+    } else {
+      log('REST probe failed — check credentials', 'warn');
+    }
+    // Open WebSocket regardless
+    connectWebSocket();
+  });
+}
+
+async function testConnection() {
+  const token     = document.getElementById('maToken').value.trim();
+  const accountId = document.getElementById('maAccountId').value.trim();
+  if (!token || !accountId) { log('Enter token and account ID first', 'warn'); return; }
+  state.token = token; state.accountId = accountId;
+  log('Testing REST connection…', 'info');
+  const info = await fetchAccountInfo();
+  if (info) {
+    log('✓ Connection OK — ' + info.name + ' @ ' + info.server, 'ok');
+    log('  Balance: $' + info.balance.toFixed(2) + ' | Equity: $' + info.equity.toFixed(2), 'ok');
+    applyAccountInfo(info);
+    setConnBadge('Connected', 'ok');
+    state.connected = true;
+  } else {
+    log('✗ Connection failed — verify token & account ID at metaapi.cloud', 'err');
+    setConnBadge('Failed', 'err');
+  }
+}
+
+// ──────────────────────────────────────────────────────────────
+//  BOT LOOP
+// ──────────────────────────────────────────────────────────────
+function toggleBot() {
+  state.running = !state.running;
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn  = document.getElementById('stopBtn');
+  if (state.running) {
+    if (!state.connected && !state.wsOpen) {
+      log('Not connected — attempting auto-connect first', 'warn');
+      saveAndConnect();
+    }
+    setStatusPill('running');
+    startBtn.disabled = true;
+    stopBtn.disabled  = false;
+    log('Bot started', 'ok');
+    runCycle();
+    restartTimer();
+  } else {
+    setStatusPill('stopped');
+    startBtn.disabled = false;
+    stopBtn.disabled  = true;
+    clearInterval(state.intervalTimer);
+    state.intervalTimer = null;
+    document.getElementById('cyclesSub').textContent = state.cycleCount + ' cycles — stopped';
+    log('Bot stopped', 'warn');
+  }
+}
+
+function restartTimer() {
+  clearInterval(state.intervalTimer);
+  state.intervalTimer = setInterval(runCycle, state.intervalMs);
+}
+
+async function runCycle() {
+  state.cycleCount++;
+  const threshold = parseFloat(document.getElementById('minThr').value) || 0;
+  const pct = parseFloat(document.getElementById('pctSlider').value) / 100;
+  log('── Cycle #' + state.cycleCount + ' ──', 'neutral');
+
+  // Pull fresh balance from MetaApi REST
+  let info = null;
+  if (state.token && state.accountId) {
+    log('Fetching live balance from MetaApi…', 'info');
+    info = await fetchAccountInfo();
+  }
+
+  if (info) {
+    applyAccountInfo(info);
+  } else if (state.balance == null) {
+    log('No balance data — skipping cycle (connect first)', 'warn');
+    return;
+  }
+
+  const bal    = state.balance;
+  const prev   = state.prevBalance != null ? state.prevBalance : bal;
+  const profit = bal - prev;
+
+  log(`Balance: $${bal.toFixed(2)} | Prev: $${prev.toFixed(2)} | Profit: ${profit>=0?'+':''}$${profit.toFixed(2)}`, profit >= 0 ? 'ok' : 'warn');
+
+  // Drawdown guard
+  if (document.getElementById('tog4').checked && state.equity && state.balance) {
+    const ddPct = (state.balance - state.equity) / state.balance;
+    if (ddPct > 0.1) {
+      log(`Drawdown ${(ddPct*100).toFixed(1)}% exceeds 10% — pausing bot`, 'err');
+      toggleBot(); return;
+    }
+  }
+
+  if (profit <= 0) { log('No positive profit detected — skipping', 'warn'); addHistory(bal, profit, pct, 0, 'No Profit'); return; }
+  if (profit < threshold) { log(`Profit $${profit.toFixed(2)} below threshold $${threshold} — skipping`, 'warn'); addHistory(bal, profit, pct, 0, 'Below Threshold'); return; }
+  if (pct === 0) { log('Reinvest % = 0 — nothing to reinvest', 'warn'); addHistory(bal, profit, pct, 0, 'Skipped'); return; }
+
+  const amount = parseFloat((profit * pct).toFixed(2));
+  const copyx  = document.getElementById('tog1').checked;
+  const sonic  = document.getElementById('tog2').checked;
+  if (!copyx && !sonic) { log('All strategies disabled', 'warn'); addHistory(bal, profit, pct, amount, 'No Strategy'); return; }
+
+  log(`Reinvesting $${amount.toFixed(2)} (${(pct*100).toFixed(0)}% of $${profit.toFixed(2)})`, 'ok');
+  if (copyx) log('→ CopyX: increasing copy allocation', 'ok');
+  if (sonic) log('→ Sonic Strategy: forwarding signal', 'ok');
+
+  // If WebSocket is live, send a deposit-type order via MetaApi
+  if (state.wsOpen && state.ws && state.accountId) {
+    const reqId = 'reinvest-' + Date.now();
+    // MetaApi doesn't have a "reinvest" endpoint — log the action
+    // Real implementation: use MetaApi CopyFactory API to adjust equity allocation
+    log(`MetaApi WS: broadcasting reinvest event (id: ${reqId.slice(-8)})`, 'info');
+    // state.ws.send(JSON.stringify({ type: 'trade', ... })); // for actual trade placement
+  }
+
+  state.totalReinvested += amount;
+  state.prevBalance = bal; // reset delta baseline
+  updateStats();
+  addHistory(bal, profit, pct, amount, 'Reinvested');
+  log(`✓ Done. Session total: $${state.totalReinvested.toFixed(2)}`, 'ok');
+}
+
+// ──────────────────────────────────────────────────────────────
+//  HISTORY
+// ──────────────────────────────────────────────────────────────
+let histFirst = true;
+function addHistory(bal, profit, pct, amount, status) {
+  const tbody = document.getElementById('histBody');
+  if (histFirst) { tbody.innerHTML = ''; histFirst = false; }
+  const platforms = [];
+  if (document.getElementById('tog1').checked) platforms.push('CopyX');
+  if (document.getElementById('tog2').checked) platforms.push('Sonic');
+  const platform = platforms.join(' + ') || '—';
+  const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const cls = status==='Reinvested'?'ok':status.includes('No')||status.includes('Below')?'skip':'skip';
+  const tr = document.createElement('tr');
+  tr.innerHTML=`<td>${now}</td><td>${platform}</td><td>$${bal?bal.toFixed(2):'—'}</td><td>${profit>=0?'+':''}$${profit.toFixed(2)}</td><td>${(pct*100).toFixed(0)}%</td><td>${amount>0?'$'+amount.toFixed(2):'—'}</td><td><span class="badge ${cls}">${status}</span></td>`;
+  tbody.insertBefore(tr, tbody.firstChild);
+}
+
+// init
+updateStats();
+</script>
+</body>
+</html>

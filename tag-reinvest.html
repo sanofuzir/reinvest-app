@@ -45,6 +45,11 @@ header {
 .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:1rem; letter-spacing:.02em; white-space:nowrap; }
 .logo-dot { width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); flex-shrink:0; }
 .hdr-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.off-btn { display:flex; align-items:center; gap:5px; padding:5px 13px; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; border:1px solid var(--danger); background:transparent; color:var(--danger); cursor:pointer; transition:all .2s; }
+.off-btn:hover { background:rgba(232,64,64,.12); }
+.off-btn:disabled { opacity:.4; cursor:not-allowed; }
+.start-btn-power, .start-btn-power:disabled { border:1px solid var(--ok, #2ecc71) !important; background:var(--ok, #2ecc71) !important; color:#06210f !important; opacity:1 !important; pointer-events:auto !important; filter:none !important; }
+.start-btn-power:hover { filter:brightness(1.08) !important; }
 
 .pill { display:flex; align-items:center; gap:7px; padding:5px 13px; border-radius:999px; font-size:.75rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; border:1px solid; transition:all .4s; white-space:nowrap; }
 .pill.running  { background:rgba(0,229,176,.08); border-color:rgba(0,229,176,.3); color:var(--accent); }
@@ -73,23 +78,30 @@ main {
 .card { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:var(--pad); min-width:0; }
 .ct { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
 .ct::after { content:''; flex:1; height:1px; background:var(--border); }
+#activityLogHeader::after, #reinvestLogHeader::after, #reinvestHistHeader::after { display:none; }
 
 /* ── Stat cards ── */
-.stat-row { grid-column: 1 / -1; display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap); }
+.stat-row { grid-column: 1 / -1; grid-row: 1; display:grid; grid-template-columns:repeat(4,1fr); gap:var(--gap); }
 .sc { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:16px 18px; position:relative; overflow:hidden; min-width:0; }
 .sc::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
 .sc.g::before { background:var(--accent); }
 .sc.w::before { background:var(--warn); }
 .sc.b::before { background:var(--accent2); }
 .sc.n::before { background:var(--muted); }
-.sl { font-size:.68rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px; }
-.sv { font-family:'JetBrains Mono',monospace; font-size:clamp(1.1rem,2vw,1.5rem); font-weight:500; line-height:1; }
+.sl { font-size:2rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.07em; margin-bottom:6px; }
+.sv { font-family:'JetBrains Mono',monospace; font-size:clamp(1.32rem,2.4vw,1.8rem); font-weight:500; line-height:1; }
 .sv.green { color:var(--profit); } .sv.warn { color:var(--warn); } .sv.red { color:var(--danger); }
+.bal-row { display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.bal-div { text-align:right; }
+.bd-lbl { font-size:.62rem; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.06em; margin-bottom:2px; }
+.bd-val { font-family:'JetBrains Mono',monospace; font-size:.95rem; font-weight:500; }
+.bd-date { font-size:.6rem; color:var(--muted); margin-top:2px; }
 .ss { margin-top:5px; font-size:.72rem; color:var(--muted); }
 
 /* ── WS live bar ── */
 .ws-bar {
   grid-column: 1 / -1;
+  grid-row: 2;
   background:var(--surface); border:1px solid var(--border); border-radius:8px;
   padding:12px 18px; display:flex; gap:0; align-items:stretch; flex-wrap:wrap;
 }
@@ -100,8 +112,11 @@ main {
 .ws-val.green { color:var(--profit); } .ws-val.warn { color:var(--warn); } .ws-val.red { color:var(--danger); }
 .ws-sep { width:1px; background:var(--border); align-self:stretch; margin:0 4px; flex-shrink:0; }
 
+.row2col { display:grid; grid-template-columns: 1fr 1fr; gap:var(--gap); width:100%; margin-bottom:var(--gap); grid-column: 1 / -1; }
+@media (max-width:899px) { .row2col { grid-template-columns: 1fr; } }
+
 /* ── Controls panel ── */
-.ctrl-panel { grid-column: 1 / 8; }
+.ctrl-panel  { min-width:0; }
 
 .slider-hdr { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
 .slider-lbl { font-size:.83rem; color:var(--muted); }
@@ -132,7 +147,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
 .btn:disabled { opacity:.35; cursor:not-allowed; }
 
 /* ── Connection panel ── */
-.conn-panel { grid-column: 8 / -1; }
+.conn-panel { min-width:0; }
 
 .ptabs { display:flex; gap:6px; margin-bottom:12px; }
 .pt { flex:1; padding:7px 0; background:var(--surface); border:1px solid var(--border); border-radius:7px; color:var(--muted); font-size:.76rem; font-weight:700; cursor:pointer; transition:all .2s; text-align:center; }
@@ -150,9 +165,15 @@ input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
 .sbtn:hover { background:rgba(0,112,243,.22); }
 .test-btn { width:100%; margin-top:7px; padding:9px 0; background:transparent; border:1px solid var(--border); border-radius:7px; color:var(--muted); font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:.8rem; cursor:pointer; transition:all .2s; }
 .test-btn:hover { border-color:var(--accent); color:var(--accent); }
+.sbtn.st-green, .test-btn.st-green { background:rgba(0,229,176,.15) !important; border-color:var(--accent) !important; color:var(--accent) !important; }
+.sbtn.st-red, .test-btn.st-red { background:rgba(232,64,64,.15) !important; border-color:var(--danger) !important; color:var(--danger) !important; }
+.sbtn.st-yellow, .test-btn.st-yellow { background:rgba(240,165,0,.15) !important; border-color:var(--warn) !important; color:var(--warn) !important; }
+.btn-start:disabled { opacity:.35; cursor:not-allowed; }
 
 /* ── Log panel ── */
-.log-panel { grid-column: 1 / 8; }
+.log-panel { min-width:0; }
+.log-split { display:grid; grid-template-columns:1fr 1fr; gap:var(--gap); }
+.log-half { min-width:0; }
 .log-box { background:var(--surface); border:1px solid var(--border); border-radius:7px; padding:12px; height:200px; overflow-y:auto; font-family:'JetBrains Mono',monospace; font-size:.76rem; line-height:1.75; }
 .log-box::-webkit-scrollbar { width:4px; }
 .log-box::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
@@ -161,7 +182,7 @@ input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
 .lm.ok { color:var(--accent); } .lm.warn { color:var(--warn); } .lm.err { color:var(--danger); } .lm.info { color:var(--accent2); } .lm.neutral { color:var(--text); }
 
 /* ── Strategy panel ── */
-.strat-panel { grid-column: 8 / -1; }
+.strat-panel { min-width:0; }
 .sr { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-size:.84rem; gap:8px; }
 .sr:last-child { border-bottom:none; }
 .sn { font-weight:500; } .sd { color:var(--muted); font-size:.76rem; margin-top:1px; }
@@ -173,13 +194,13 @@ input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
 .toggle input:checked ~ .tthumb { transform:translateX(17px); }
 
 /* ── Notice ── */
-.notice { grid-column:1/-1; background:rgba(0,112,243,.07); border:1px solid rgba(0,112,243,.25); border-radius:var(--r); padding:14px 18px; font-size:.79rem; color:#7ab4ff; line-height:1.65; display:flex; gap:12px; }
+.notice { grid-column:1/-1; grid-row:5; background:rgba(0,112,243,.07); border:1px solid rgba(0,112,243,.25); border-radius:var(--r); padding:14px 18px; font-size:.79rem; color:#7ab4ff; line-height:1.65; display:flex; gap:12px; }
 .ni2 { font-size:1rem; flex-shrink:0; margin-top:1px; }
 .notice strong { color:#aacfff; }
 .notice code { font-family:'JetBrains Mono',monospace; font-size:.76rem; background:rgba(0,112,243,.15); padding:1px 5px; border-radius:3px; }
 
 /* ── History ── */
-.hist-panel { grid-column:1/-1; overflow-x:auto; }
+.hist-panel { grid-column:1/-1; grid-row:6; overflow-x:auto; }
 .hist-panel .card-inner { overflow-x:auto; }
 table { width:100%; border-collapse:collapse; font-size:.8rem; min-width:580px; }
 th { text-align:left; padding:7px 11px; color:var(--muted); font-weight:700; font-size:.67rem; text-transform:uppercase; letter-spacing:.07em; border-bottom:1px solid var(--border); white-space:nowrap; }
@@ -197,24 +218,14 @@ tr:hover td { background:rgba(255,255,255,.02); }
 /* Tablet landscape / small desktop: 1024–1279px */
 @media (max-width:1279px) {
   :root { --pad:18px; }
-  .ctrl-panel  { grid-column: 1 / 7; }
-  .conn-panel  { grid-column: 7 / -1; }
-  .log-panel   { grid-column: 1 / 7; }
-  .strat-panel { grid-column: 7 / -1; }
 }
 
 /* Tablet portrait: 768–1023px */
 @media (max-width:1023px) {
   :root { --pad:16px; --gap:14px; }
-  main { grid-template-columns: repeat(6, 1fr); }
   .stat-row    { grid-template-columns: repeat(2, 1fr); }
-  .ctrl-panel  { grid-column: 1 / -1; }
-  .conn-panel  { grid-column: 1 / -1; }
-  .log-panel   { grid-column: 1 / -1; }
-  .strat-panel { grid-column: 1 / -1; }
-  .notice      { grid-column: 1 / -1; }
-  .hist-panel  { grid-column: 1 / -1; }
-  .ws-bar      { grid-column: 1 / -1; }
+  .stat-row    { grid-row: auto; }
+  .row2col     { grid-template-columns: 1fr; }
   /* 2-col strategy grid on tablet */
   .strat-panel .sr { flex-wrap:nowrap; }
   .ws-sep { display:none; }
@@ -225,26 +236,21 @@ tr:hover td { background:rgba(255,255,255,.02); }
 /* Mobile large: 600–767px */
 @media (max-width:767px) {
   :root { --pad:14px; --gap:12px; }
-  main { grid-template-columns: 1fr 1fr; }
-  .stat-row    { grid-column:1/-1; grid-template-columns:1fr 1fr; }
-  .ws-bar      { grid-column:1/-1; }
-  .ctrl-panel  { grid-column:1/-1; }
-  .conn-panel  { grid-column:1/-1; }
-  .log-panel   { grid-column:1/-1; }
-  .strat-panel { grid-column:1/-1; }
-  .notice      { grid-column:1/-1; flex-direction:column; gap:8px; }
-  .hist-panel  { grid-column:1/-1; }
+  .stat-row    { grid-template-columns:1fr 1fr; }
+  .row2col     { grid-template-columns: 1fr; }
+  .notice      { flex-direction:column; gap:8px; }
   .ibg         { flex-wrap:wrap; }
   .ib          { min-width:calc(33% - 6px); }
   .ws-item     { min-width:calc(50% - 8px); }
   .sv          { font-size:1.2rem; }
+  .log-split   { grid-template-columns:1fr; }
 }
 
 /* Mobile small: ≤599px */
 @media (max-width:599px) {
   :root { --pad:12px; --gap:10px; }
   header { padding:12px var(--pad); }
-  main { grid-template-columns:1fr; padding:var(--pad); }
+  main { padding:var(--pad); }
   .stat-row    { grid-template-columns:1fr 1fr; }
   .ws-bar      { flex-direction:column; align-items:flex-start; gap:8px; }
   .ws-sep      { display:none; }
@@ -263,6 +269,7 @@ tr:hover td { background:rgba(255,255,255,.02); }
   .hdr-right   { width:100%; justify-content:flex-end; }
 }
 </style>
+  <script src="https://unpkg.com/metaapi.cloud-sdk"></script>
 </head>
 <body>
 
@@ -271,6 +278,8 @@ tr:hover td { background:rgba(255,255,255,.02); }
   <div class="hdr-right">
     <span class="conn-badge" id="connBadge">● Not Connected</span>
     <div class="pill stopped" id="statusPill"><div class="blink"></div><span id="statusTxt">Stopped</span></div>
+    <button class="off-btn" id="offBtn" onclick="shutdownApp()" title="Turn off app">⏻ Off</button>
+    <button class="off-btn start-btn-power" id="startBtnPower" onclick="location.reload()" title="Restart app" style="display:none;margin-left:6px;">▶ Start</button>
   </div>
 </header>
 
@@ -278,54 +287,48 @@ tr:hover td { background:rgba(255,255,255,.02); }
 
   <!-- Stats -->
   <div class="stat-row">
-    <div class="sc g"><div class="sl">Balance (MT5)</div><div class="sv green" id="balVal">—</div><div class="ss" id="balSub">Awaiting connection</div></div>
-    <div class="sc w"><div class="sl">Profit / Drawdown</div><div class="sv warn" id="profitVal">—</div><div class="ss" id="profitSub">equity − balance</div></div>
-    <div class="sc b"><div class="sl">Will Reinvest</div><div class="sv" id="reinvestVal">—</div><div class="ss" id="reinvestSub">at 50% setting</div></div>
-    <div class="sc n"><div class="sl">Session Total</div><div class="sv" id="totalVal">$0.00</div><div class="ss" id="cyclesSub">0 cycles run</div></div>
+    <div class="sc g"><div class="sl">Balance</div><div class="bal-row"><div class="sv green" id="balVal">—</div><div class="bal-div"><div class="bd-lbl">Real Balance</div><div class="bd-val" id="balDiv24">—</div><div class="bd-lbl" style="margin-top:8px;">Equity</div><div class="bd-val" id="wsEquity" style="font-size:.85rem;">—</div></div></div></div>
+    <div class="sc w"><div class="sl">Profit</div><div class="bal-row"><div class="sv warn" id="profitVal">—</div><div class="bal-div"><div class="bd-lbl">Last Profit</div><div class="bd-val" id="lastProfitVal">—</div><div class="bd-date" id="lastProfitDate"></div><div class="bd-lbl" style="margin-top:8px;">Leverage</div><div class="bd-val" id="wsLeverage">—</div></div></div><div class="ss" id="profitSub">equity − balance</div></div>
+    <div class="sc b"><div class="sl">Reinvest</div><div class="bal-row"><div class="sv" id="reinvestVal">—</div><div class="bal-div"><div class="bd-lbl">Last Reinvestment</div><div class="bd-val" id="lastReinvestVal">—</div><div class="bd-date" id="lastReinvestDate"></div><div class="bd-lbl" style="margin-top:8px;">Available to Reinvest</div><div class="bd-val" id="availableToReinvestVal">$0.00</div><div class="bd-lbl" style="margin-top:8px;">Free Margin</div><div class="bd-val" id="wsFreeMargin">—</div></div></div><div class="ss" id="reinvestSub" style="font-size:1.1em;">Currently at <span id="reinvestPct" style="color:var(--accent2);font-weight:700;">50%</span> setting</div></div>
+    <div class="sc n"><div class="sl">Session Total</div><div class="bal-row"><div class="sv" id="totalVal">$0.00</div><div class="bal-div">
+  <div class="bd-lbl">Server</div><div class="bd-val" id="wsServer">—</div>
+  <div class="bd-lbl" style="margin-top:8px;">Account</div><div class="bd-val" id="wsLogin">—</div>
+  <div class="bd-lbl" style="margin-top:8px;">Trade Allowed</div><div class="bd-val" id="wsTradeAllowed">—</div>
+  <div class="bd-lbl" style="margin-top:8px;">WS Stream</div><div class="bd-val" id="wsStreamStatus">Offline</div>
+  <div class="bd-lbl" style="margin-top:8px;">Last Update</div><div class="bd-val" id="wsLastUpdate">—</div>
+</div></div><div class="ss" id="cyclesSub"><span id="cyclesCount" style="color:var(--accent2, #4da6ff); font-size:1.1em; font-weight:700;">0</span> cycles run</div></div>
   </div>
 
-  <!-- Live WS data bar -->
-  <div class="ws-bar">
-    <div class="ws-item"><div class="ws-key">Server</div><div class="ws-val" id="wsServer">—</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">Account</div><div class="ws-val" id="wsLogin">—</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">Equity</div><div class="ws-val green" id="wsEquity">—</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">Free Margin</div><div class="ws-val" id="wsFreeMargin">—</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">Leverage</div><div class="ws-val" id="wsLeverage">—</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">Trade Allowed</div><div class="ws-val" id="wsTradeAllowed">—</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">WS Stream</div><div class="ws-val" id="wsStreamStatus">Offline</div></div>
-    <div class="ws-sep"></div>
-    <div class="ws-item"><div class="ws-key">Last Update</div><div class="ws-val" id="wsLastUpdate">—</div></div>
-  </div>
-
+  <!-- Row: Controls + Connection -->
+  <div class="row2col">
   <!-- Controls -->
   <div class="card ctrl-panel">
     <div class="ct">Reinvestment Settings</div>
 
-    <div style="margin-bottom:18px">
-      <div class="slider-hdr"><span class="slider-lbl">Funds to Reinvest</span><span class="slider-val" id="pctDisp">50%</span></div>
-      <input type="range" id="pctSlider" min="0" max="100" step="5" value="50"/>
-      <div class="ticks">
-        <span class="tick" onclick="setSlider(0)">0%</span>
-        <span class="tick" onclick="setSlider(25)">25%</span>
-        <span class="tick" onclick="setSlider(50)">50%</span>
-        <span class="tick" onclick="setSlider(75)">75%</span>
-        <span class="tick" onclick="setSlider(100)">100%</span>
+    <div style="margin-bottom:18px;display:flex;gap:12px;align-items:stretch;">
+      <div style="flex:0 0 80%;min-width:0;">
+        <div class="slider-hdr"><span class="slider-lbl">Funds to Reinvest</span><span class="slider-val" id="pctDisp">50%</span></div>
+        <input type="range" id="pctSlider" min="0" max="100" step="5" value="50"/>
+        <div class="ticks">
+          <span class="tick" onclick="setSlider(0)">0%</span>
+          <span class="tick" onclick="setSlider(25)">25%</span>
+          <span class="tick" onclick="setSlider(50)">50%</span>
+          <span class="tick" onclick="setSlider(75)">75%</span>
+          <span class="tick" onclick="setSlider(100)">100%</span>
+        </div>
+      </div>
+      <div style="flex:0 0 20%;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 8px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+        <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600;">Last Interval Update</div>
+        <div id="lastIntervalUpdate" style="font-size:.78rem;font-weight:700;color:var(--text);margin-top:4px;">—</div>
       </div>
     </div>
 
     <div class="ct">Check Interval</div>
     <div class="ibg" id="intBtns">
-      <button class="ib" onclick="setInterval_(15,this)">15 min</button>
-      <button class="ib active" onclick="setInterval_(30,this)">30 min</button>
-      <button class="ib" onclick="setInterval_(60,this)">1 hr</button>
-      <button class="ib" onclick="setInterval_(180,this)">3 hr</button>
-      <button class="ib" onclick="setInterval_(360,this)">6 hr</button>
+      <button class="ib" onclick="runCycleNow()">Now</button>
+      <button class="ib active" onclick="setInterval_(60,this)">1 hr</button>
+      <button class="ib" onclick="setInterval_(720,this)">12 hr</button>
+      <button class="ib" onclick="setInterval_(1440,this)">24 hr</button>
     </div>
 
     <div class="ct">Minimum Profit Threshold</div>
@@ -335,82 +338,103 @@ tr:hover td { background:rgba(255,255,255,.02); }
     </div>
 
     <div class="action-row">
-      <button class="btn btn-start" id="startBtn" onclick="toggleBot()">▶ Start</button>
+      <button class="btn btn-start" id="startBtn" onclick="toggleBot()" disabled>▶ Start</button>
       <button class="btn btn-stop" id="stopBtn" onclick="toggleBot()" disabled>■ Stop</button>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border,rgba(255,255,255,.1));margin:16px 0;">
+
+    <div class="ct">Strategy Filters</div>
+    <div class="sr-horiz" style="display:flex;flex-wrap:wrap;gap:14px;">
+      <div class="sr-h-item" style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:8px;">
+        <div class="sn">CopyX Profit Reinvest</div>
+        <div class="sd">Detected via balance delta</div>
+        <label class="toggle" style="display:inline-block;"><input type="checkbox" id="tog1" checked onchange="onCopyXToggle()"/><div class="ttrack"></div><div class="tthumb"></div></label>
+      </div>
+      <div class="sr-h-item" id="sonicWrap" style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:8px;">
+        <div class="sn">Sonic Strategy Signal</div>
+        <div class="sd">Webhook-triggered reinvest</div>
+        <label class="toggle" style="display:inline-block;"><input type="checkbox" id="tog2" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+      </div>
+      <div class="sr-h-item" style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:8px;">
+        <div class="sn">Pause on Drawdown</div>
+        <div class="sd">Halt if equity drops &gt;10%</div>
+        <label class="toggle" style="display:inline-block;"><input type="checkbox" id="tog4" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+      </div>
+      <div class="sr-h-item" style="flex:1;min-width:140px;display:flex;flex-direction:column;gap:8px;">
+        <div class="sn">WS Reconnect</div>
+        <div class="sd">Auto-reconnect on disconnect</div>
+        <label class="toggle" style="display:inline-block;"><input type="checkbox" id="tog5" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+      </div>
     </div>
   </div>
 
   <!-- Connection -->
   <div class="card conn-panel">
     <div class="ct">MetaApi Connection</div>
-
-    <div class="ptabs" id="ptabs">
-      <div class="pt active" onclick="switchTab('metaapi',this)">MetaApi</div>
-      <div class="pt" onclick="switchTab('direct',this)">MT5 Direct</div>
+    <div class="ig">
+      <label>MetaApi Token <span style="color:var(--accent2)">*</span></label>
+      <input class="ti mono" type="password" id="maToken" placeholder="Get free token at metaapi.cloud"/>
+      <div class="hint">Free tier available · <a href="https://metaapi.cloud" target="_blank">metaapi.cloud</a></div>
     </div>
-
-    <div id="tabMetaapi">
-      <div class="ig">
-        <label>MetaApi Token <span style="color:var(--accent2)">*</span></label>
-        <input class="ti mono" type="password" id="maToken" placeholder="Get free token at metaapi.cloud"/>
-        <div class="hint">Free tier available · <a href="https://metaapi.cloud" target="_blank">metaapi.cloud</a></div>
-      </div>
-      <div class="ig">
-        <label>MetaApi Account ID <span style="color:var(--accent2)">*</span></label>
-        <input class="ti mono" id="maAccountId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
-        <div class="hint">Found in your MetaApi dashboard after adding your MT5 account</div>
-      </div>
-      <div class="ig">
-        <label>Tag Markets MT5 Server</label>
-        <input class="ti" id="maServer" placeholder="TagMarkets-Live  (auto-detected)"/>
-      </div>
-      <button class="sbtn" onclick="saveAndConnect()">Connect via MetaApi</button>
-      <button class="test-btn" onclick="testConnection()">Test Connection</button>
+    <div class="ig">
+      <label>MetaApi Account ID <span style="color:var(--accent2)">*</span></label>
+      <input class="ti mono" id="maAccountId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"/>
+      <div class="hint">Found in your MetaApi dashboard after adding your MT5 account</div>
     </div>
-
-    <div id="tabDirect" style="display:none">
-      <div class="ig">
-        <label>MT5 WebSocket URL</label>
-        <input class="ti mono" id="wsUrl" placeholder="wss://your-mt5-server:8228"/>
-      </div>
-      <div class="ig">
-        <label>MT5 Login</label>
-        <input class="ti mono" id="mt5Login" placeholder="Account number"/>
-      </div>
-      <div class="ig">
-        <label>MT5 Password</label>
-        <input class="ti" type="password" id="mt5Pass" placeholder="Investor or trade password"/>
-      </div>
-      <button class="sbtn" onclick="saveAndConnect()">Connect Direct</button>
-      <div class="hint" style="margin-top:8px">Direct WebSocket requires MT5 Manager API access from Tag Markets. Contact their support to enable it.</div>
+    <div class="ig">
+      <label>Tag Markets MT5 Server</label>
+      <input class="ti" id="maServer" placeholder="TagMarkets-Live  (auto-detected)"/>
+    </div>
+    <div class="ig">
+      <label>Maximal Connection Attempts</label>
+      <input class="ti" id="maxConnAttempts" type="number" min="1" value="10"/>
+      <div class="hint">Auto-reconnect stops after this many retry attempts</div>
+    </div>
+    <button class="sbtn" id="connectBtn" onclick="saveAndConnect()">Connect via MetaApi</button>
+    <button class="test-btn" id="testConnBtn" onclick="testConnection()">Test Connection</button>
+    <div style="min-height:60px;display:flex;align-items:center;justify-content:center;margin-top:8px;">
+      <span id="connStatusMsg" style="font-weight:700;font-size:.85rem;letter-spacing:.03em;"></span>
     </div>
   </div>
-
-  <!-- Log -->
-  <div class="card log-panel">
-    <div class="ct">Activity Log <span style="font-size:.65rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— live feed from MetaApi WebSocket</span></div>
-    <div class="log-box" id="logBox">
-      <div class="ll"><span class="lt">--:--</span><span class="lm neutral">Enter credentials and click Connect to begin…</span></div>
-    </div>
   </div>
 
-  <!-- Strategy Filters -->
-  <div class="card strat-panel">
-    <div class="ct">Strategy Filters</div>
-    <div class="sr"><div><div class="sn">CopyX Profit Reinvest</div><div class="sd">Detected via balance delta</div></div>
-      <label class="toggle"><input type="checkbox" id="tog1" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+  <!-- Row: Logs + History -->
+  <div class="row2col">
+    <!-- Left: Reinvestment Log + Reinvestment History side by side -->
+    <div class="log-split" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);">
+      <div class="card log-panel">
+        <div class="ct" style="justify-content:space-between;" id="reinvestLogHeader">
+          <span>Reinvestment Log <span style="font-size:.6rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— date, time, value</span></span>
+          <button onclick="clearReinvestLog()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:3px 9px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;font-weight:600;flex:none;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">Clear Log</button>
+        </div>
+        <div class="log-box" id="reinvestLogBox">
+          <div class="ll"><span class="lt">--:--</span><span class="lm neutral">No reinvestments yet</span></div>
+        </div>
+      </div>
+      <div class="card hist-panel" style="grid-column:auto !important;grid-row:auto !important;">
+        <div class="ct" style="justify-content:space-between;" id="reinvestHistHeader">
+          <span>Reinvestment History Log</span>
+          <button onclick="clearReinvestHistory()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:3px 9px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;font-weight:600;flex:none;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">Clear Log</button>
+        </div>
+        <div style="overflow:auto;width:100%;height:200px;">
+          <table>
+            <thead><tr><th>Time</th><th>Platform</th><th>Bal.</th><th>Profit</th><th>%</th><th>Reinv.</th><th>Status</th></tr></thead>
+            <tbody id="histBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">No cycles yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="sr"><div><div class="sn">Sonic Strategy Signal</div><div class="sd">Webhook-triggered reinvest</div></div>
-      <label class="toggle"><input type="checkbox" id="tog2" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
-    </div>
-    <div class="sr"><div><div class="sn">Amplify Account Boost</div><div class="sd">If Amplify account active</div></div>
-      <label class="toggle"><input type="checkbox" id="tog3"/><div class="ttrack"></div><div class="tthumb"></div></label>
-    </div>
-    <div class="sr"><div><div class="sn">Pause on Drawdown</div><div class="sd">Halt if equity drops &gt;10%</div></div>
-      <label class="toggle"><input type="checkbox" id="tog4" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
-    </div>
-    <div class="sr"><div><div class="sn">WS Reconnect</div><div class="sd">Auto-reconnect on disconnect</div></div>
-      <label class="toggle"><input type="checkbox" id="tog5" checked/><div class="ttrack"></div><div class="tthumb"></div></label>
+
+    <!-- Right: Activity Log -->
+    <div class="card log-panel" style="display:flex;flex-direction:column;">
+      <div class="ct" style="justify-content:space-between;min-width:0;" id="activityLogHeader">
+        <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Activity Log <span style="font-size:.6rem;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">— live feed</span></span>
+        <button onclick="clearActivityLog()" style="background:transparent;border:1px solid var(--border);color:var(--muted);font-size:.65rem;padding:3px 9px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:.04em;font-weight:600;flex:none;white-space:nowrap;" onmouseover="this.style.borderColor='var(--danger)';this.style.color='var(--danger)';" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)';">Clear Log</button>
+      </div>
+      <div class="log-box" id="logBox" style="height:420px;">
+        <div class="ll"><span class="lt">--:--</span><span class="lm neutral">Enter credentials and click Connect to begin…</span></div>
+      </div>
     </div>
   </div>
 
@@ -426,16 +450,7 @@ tr:hover td { background:rgba(255,255,255,.02); }
     </span>
   </div>
 
-  <!-- History -->
-  <div class="card hist-panel">
-    <div class="ct">Reinvestment History</div>
-    <div style="overflow-x:auto;width:100%">
-      <table>
-        <thead><tr><th>Time</th><th>Platform</th><th>Balance Before</th><th>Profit Detected</th><th>% Setting</th><th>Reinvested</th><th>Status</th></tr></thead>
-        <tbody id="histBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">No cycles yet</td></tr></tbody>
-      </table>
-    </div>
-  </div>
+
 
 </main>
 
@@ -451,6 +466,7 @@ const state = {
   intervalTimer: null,
   cycleCount: 0,
   totalReinvested: 0,
+  availableToReinvest: 0,
   // Live MT5 data
   balance: null,
   equity: null,
@@ -463,6 +479,7 @@ const state = {
   // WS
   ws: null,
   wsReconnectTimer: null,
+  restPollTimer: null,
 };
 
 // Persisted credentials
@@ -479,12 +496,27 @@ loadCreds();
 // ──────────────────────────────────────────────────────────────
 //  UI helpers
 // ──────────────────────────────────────────────────────────────
+const MAX_LOG_ROWS = 30;
+function clearActivityLog() {
+  const box = document.getElementById('logBox');
+  if (box) box.innerHTML = '<div class="ll"><span class="lt">--:--</span><span class="lm neutral">Log cleared</span></div>';
+}
+function clearReinvestLog() {
+  const box = document.getElementById('reinvestLogBox');
+  if (box) box.innerHTML = '<div class="ll"><span class="lt">--:--</span><span class="lm neutral">No reinvestments yet</span></div>';
+}
+function clearReinvestHistory() {
+  const body = document.getElementById('histBody');
+  if (body) body.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:18px">No cycles yet</td></tr>';
+}
 function log(msg, type='neutral') {
   const box = document.getElementById('logBox');
   const now = new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   const d = document.createElement('div'); d.className='ll';
   d.innerHTML=`<span class="lt">${now}</span><span class="lm ${type}">${msg}</span>`;
-  box.appendChild(d); box.scrollTop = box.scrollHeight;
+  box.appendChild(d);
+  while (box.children.length > MAX_LOG_ROWS) box.removeChild(box.firstChild);
+  box.scrollTop = box.scrollHeight;
 }
 
 function setConnBadge(text, cls) {
@@ -498,6 +530,10 @@ function setStatusPill(status) {
   const t = document.getElementById('statusTxt');
   p.className = 'pill ' + status;
   t.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+  // [UI] Any explicit status change (connecting/stopped/running) means
+  // we're no longer in the "already connected, pill hidden" state, so
+  // bring the pill back into view.
+  p.style.display = 'flex';
 }
 
 function updateStats() {
@@ -509,12 +545,24 @@ function updateStats() {
   const reinvAmt = profit != null && profit > 0 ? profit * pct : 0;
 
   document.getElementById('balVal').textContent    = bal  != null ? '$'+bal.toFixed(2)  : '—';
+  document.getElementById('balDiv24').textContent  = bal  != null ? '$'+(bal/24).toFixed(2) : '—';
   document.getElementById('profitVal').textContent = profit != null ? (profit>=0?'+':'')+profit.toFixed(2) : '—';
   document.getElementById('profitVal').className   = 'sv ' + (profit != null ? (profit >= 0 ? 'warn' : 'red') : 'warn');
   document.getElementById('reinvestVal').textContent = profit != null ? '$'+reinvAmt.toFixed(2) : '—';
-  document.getElementById('reinvestSub').textContent = 'at ' + (pct*100).toFixed(0) + '% setting';
+  document.getElementById('reinvestPct').textContent = (pct*100).toFixed(0) + '%';
   document.getElementById('totalVal').textContent  = '$' + state.totalReinvested.toFixed(2);
-  document.getElementById('cyclesSub').textContent = state.cycleCount + ' cycles run';
+  document.getElementById('availableToReinvestVal').textContent = '$' + state.availableToReinvest.toFixed(2);
+  document.getElementById('cyclesCount').textContent = state.cycleCount;
+
+  if (profit != null && profit > 0) {
+    state.lastProfit = profit;
+    state.lastProfitDate = new Date();
+    document.getElementById('lastProfitVal').textContent = '+$' + profit.toFixed(2);
+    document.getElementById('lastProfitDate').textContent = state.lastProfitDate.toLocaleString();
+  } else if (state.lastProfit != null) {
+    document.getElementById('lastProfitVal').textContent = '+$' + state.lastProfit.toFixed(2);
+    document.getElementById('lastProfitDate').textContent = state.lastProfitDate.toLocaleString();
+  }
 }
 
 function updateWsBar(info) {
@@ -549,13 +597,9 @@ function setInterval_(min, btn) {
   btn.classList.add('active');
   log('Check interval → ' + min + ' min', 'info');
   if (state.running) restartTimer();
+  refreshLastIntervalDisplay();
 }
-function switchTab(tab, el) {
-  document.querySelectorAll('.pt').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tabMetaapi').style.display = tab==='metaapi'?'':'none';
-  document.getElementById('tabDirect').style.display  = tab==='direct'?'':'none';
-}
+
 
 // ──────────────────────────────────────────────────────────────
 //  METAAPI REST — fetch account info
@@ -576,72 +620,160 @@ async function fetchAccountInfo() {
 }
 
 // ──────────────────────────────────────────────────────────────
+//  METAAPI — check deployment state + REST polling fallback
+// ──────────────────────────────────────────────────────────────
+async function fetchAccountState() {
+  if (!state.token || !state.accountId) return null;
+  try {
+    const url = `${state.apiBase}/users/current/accounts/${state.accountId}`;
+    const res = await fetch(url, { headers: { 'auth-token': state.token } });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) { return null; }
+}
+
+function startRestPolling() {
+  if (state.restPollTimer) return;
+  log('WS unavailable — REST polling every 30s as fallback', 'warn');
+  document.getElementById('wsStreamStatus').textContent = 'REST Poll';
+  document.getElementById('wsStreamStatus').className = 'ws-val warn';
+  state.restPollTimer = setInterval(async () => {
+    const info = await fetchAccountInfo();
+    if (info) {
+      applyAccountInfo(info);
+      if (!state.wsOpen) connectWebSocket(); // retry WS upgrade
+    }
+  }, 30000);
+}
+
+function stopRestPolling() {
+  if (state.restPollTimer) { clearInterval(state.restPollTimer); state.restPollTimer = null; }
+}
+
+// ──────────────────────────────────────────────────────────────
 //  METAAPI WEBSOCKET
 // ──────────────────────────────────────────────────────────────
-function connectWebSocket() {
+// ──────────────────────────────────────────────────────────────
+//  [SDK] MetaApi official SDK connection
+//  Everything in this block uses the real metaapi.cloud-sdk
+//  (loaded via <script> tag as the global `MetaApi`).
+//  This replaces our old hand-rolled raw Socket.IO client, which
+//  MetaApi's server was silently rejecting (likely an origin/
+//  handshake restriction on direct browser socket connections).
+//  NOTE: fetchAccountInfo() / fetchAccountState() below this block
+//  are still plain REST `fetch()` calls, NOT the SDK. Those still
+//  work fine as-is and don't need to change for now.
+// ──────────────────────────────────────────────────────────────
+
+// [SDK] Single shared MetaApi instance + connection, reused across
+// connect/disconnect cycles instead of being recreated every time.
+let metaApiInstance = null;
+let metaApiAccount = null;
+let metaApiConnection = null;
+
+async function connectWebSocket() {
   if (!state.token || !state.accountId) {
     log('No credentials — cannot open WebSocket', 'err');
     return;
   }
 
-  // MetaApi WebSocket endpoint (streaming API)
-  const wsUrl = `wss://mt-client-api-v1.london.agiliumtrade.ai/ws/rpc/v1?auth-token=${state.token}`;
-  log('Opening MetaApi WebSocket…', 'info');
+  // [SDK] Tear down any previous SDK connection before starting a new one
+  if (metaApiConnection) {
+    try { await metaApiConnection.close(); } catch(e) {}
+    metaApiConnection = null;
+  }
+
+  state.wsOpen = false;
+  state.connected = false;
+  state.cancelledConnect = false;
+  if (!state.retryCount) state.retryCount = 0;
+
+  log('Connecting via MetaApi SDK…', 'info');
   document.getElementById('wsStreamStatus').textContent = 'Connecting…';
   document.getElementById('wsStreamStatus').className = 'ws-val warn';
 
-  const ws = new WebSocket(wsUrl);
-  state.ws = ws;
+  try {
+    // [SDK] Create the MetaApi client instance once (it's meant to be
+    // long-lived and reused, not recreated per connection attempt)
+    if (!metaApiInstance) {
+      metaApiInstance = new MetaApi.default(state.token);
+    }
 
-  ws.onopen = () => {
+    // [SDK] Look up the MetaTrader account object by its account ID
+    metaApiAccount = await metaApiInstance.metatraderAccountApi.getAccount(state.accountId);
+
+    // [SDK] Open an RPC connection — right tool for a monitoring app
+    // like this one (balance/equity/positions), rather than the full
+    // streaming connection used by trade-copying style apps.
+    metaApiConnection = metaApiAccount.getRPCConnection();
+    await metaApiConnection.connect();
+
+    log('MetaApi connected — waiting for synchronization…', 'info');
+
+    // [SDK] Blocks until the terminal state (account info, positions,
+    // etc.) has fully synchronized — the SDK handles all the
+    // subscribe/synchronize handshake steps internally here.
+    await metaApiConnection.waitSynchronized();
+
     state.wsOpen = true;
-    log('WebSocket connected — subscribing to account stream', 'ok');
+    state.retryCount = 0;
+    stopRestPolling();
+    log('MetaApi synchronized — streaming live data', 'ok');
     document.getElementById('wsStreamStatus').textContent = 'Live ●';
     document.getElementById('wsStreamStatus').className = 'ws-val green';
     setConnBadge('Connected', 'ok');
+    setConnectBtnState('green');
     state.connected = true;
+    // [UI] Hide the connecting/running status pill once a real
+    // MetaApi connection is confirmed — showing both "Connected" and
+    // "Connecting" badges at once is confusing, so collapse the pill
+    // entirely (display:none, not visibility:hidden, so no gap is left).
+    document.getElementById('statusPill').style.display = 'none';
 
-    // Subscribe to account synchronization
-    ws.send(JSON.stringify({
-      type: 'subscribe',
-      accountId: state.accountId,
-      requestId: 'sub-' + Date.now()
-    }));
+    // [SDK] Pull account info immediately once synchronized
+    const info = await metaApiConnection.getAccountInformation();
+    applyAccountInfo(info);
 
-    // Also request account information immediately
-    ws.send(JSON.stringify({
-      type: 'getAccountInformation',
-      accountId: state.accountId,
-      requestId: 'init-acctinfo-' + Date.now()
-    }));
-  };
+    // [SDK] Poll periodically for balance/equity updates via the SDK's
+    // RPC call. (A full streaming listener could replace this later,
+    // but polling the RPC connection is simple and reliable for now.)
+    clearInterval(state.sdkPollTimer);
+    state.sdkPollTimer = setInterval(async () => {
+      if (!metaApiConnection) return;
+      try {
+        const info = await metaApiConnection.getAccountInformation();
+        applyAccountInfo(info);
+      } catch (e) {
+        log('MetaApi SDK poll error: ' + e.message, 'err');
+      }
+    }, 5000);
 
-  ws.onmessage = (event) => {
-    try {
-      const msg = JSON.parse(event.data);
-      handleWsMessage(msg);
-    } catch(e) { /* ignore parse errors */ }
-  };
-
-  ws.onerror = (e) => {
-    log('WebSocket error — check token & account ID', 'err');
+  } catch (err) {
+    log('MetaApi SDK connect error: ' + (err.message || String(err)), 'err');
     document.getElementById('wsStreamStatus').textContent = 'Error';
     document.getElementById('wsStreamStatus').className = 'ws-val red';
-  };
+    setConnectBtnState('red');
+    scheduleReconnect();
+  }
+}
 
-  ws.onclose = (e) => {
-    state.wsOpen = false;
-    state.connected = false;
-    setConnBadge('Disconnected', 'err');
-    document.getElementById('wsStreamStatus').textContent = 'Offline';
-    document.getElementById('wsStreamStatus').className = 'ws-val red';
-    log('WebSocket closed (code ' + e.code + ')', 'warn');
-
-    if (document.getElementById('tog5').checked && state.running) {
-      log('Auto-reconnect in 10s…', 'warn');
-      state.wsReconnectTimer = setTimeout(connectWebSocket, 10000);
-    }
-  };
+function scheduleReconnect() {
+  if (state.cancelledConnect) return;
+  const maxAttemptsInput = document.getElementById('maxConnAttempts');
+  const maxAttempts = maxAttemptsInput ? (parseInt(maxAttemptsInput.value, 10) || 10) : 10;
+  state.retryCount = (state.retryCount || 0) + 1;
+  if (document.getElementById('tog5').checked && state.retryCount >= maxAttempts) {
+    log(`Max connection attempts (${maxAttempts}) reached — stopping`, 'err');
+    setConnectBtnState('red');
+    return;
+  }
+  if (document.getElementById('tog5').checked) {
+    log(`Auto-reconnect in 20s… (attempt ${state.retryCount})`, 'warn');
+    setConnectBtnState('yellow', true);
+    startRestPolling();
+    clearTimeout(state.wsReconnectTimer);
+    state.wsReconnectTimer = setTimeout(connectWebSocket, 20000);
+  }
 }
 
 function handleWsMessage(msg) {
@@ -687,6 +819,26 @@ function applyAccountInfo(info) {
 //  SAVE & CONNECT
 // ──────────────────────────────────────────────────────────────
 function saveAndConnect() {
+  const connectBtn = document.getElementById('connectBtn');
+  if (connectBtn && connectBtn.classList.contains('st-yellow')) {
+    // Cancel in-flight connection attempt
+    state.cancelledConnect = true;
+    clearTimeout(state.wsReconnectTimer);
+    state.wsReconnectTimer = null;
+    stopRestPolling();
+    clearInterval(state.sdkPollTimer);
+    if (metaApiConnection) { try { metaApiConnection.close(); } catch(e){} metaApiConnection = null; }
+    state.wsOpen = false;
+    state.connected = false;
+    setStatusPill('stopped');
+    setConnBadge('Not Connected', '');
+    setConnectBtnState('');
+    document.getElementById('wsStreamStatus').textContent = 'Offline';
+    document.getElementById('wsStreamStatus').className = 'ws-val';
+    log('Connection attempt cancelled', 'warn');
+    return;
+  }
+
   const token     = document.getElementById('maToken').value.trim();
   const accountId = document.getElementById('maAccountId').value.trim();
   const server    = document.getElementById('maServer').value.trim();
@@ -697,17 +849,21 @@ function saveAndConnect() {
   }
   state.token     = token;
   state.accountId = accountId;
+  state.cancelledConnect = false;
+  state.retryCount = 0;
 
   try { localStorage.setItem('tagReinvestCreds', JSON.stringify({token, accountId, server})); } catch(e){}
 
   log('Credentials saved', 'ok');
 
-  // Close any old WS
-  if (state.ws) { try { state.ws.close(); } catch(e){} }
+  // Close any old SDK connection
+  clearInterval(state.sdkPollTimer);
+  if (metaApiConnection) { try { metaApiConnection.close(); } catch(e){} metaApiConnection = null; }
   clearTimeout(state.wsReconnectTimer);
 
   setStatusPill('connecting');
   setConnBadge('Connecting…', '');
+  setConnectBtnState('yellow');
 
   // REST probe first
   log('Probing account via REST…', 'info');
@@ -723,12 +879,72 @@ function saveAndConnect() {
   });
 }
 
+function onCopyXToggle() {
+  const copyxOn = document.getElementById('tog1').checked;
+  const tog2 = document.getElementById('tog2');
+  tog2.disabled = !copyxOn;
+  if (!copyxOn) tog2.checked = false;
+  const wrap = document.getElementById('sonicWrap');
+  if (wrap) wrap.style.opacity = copyxOn ? '1' : '.4';
+}
+
+function setConnectBtnState(stateName, isRetry) {
+  const btn = document.getElementById('connectBtn');
+  if (!btn) return;
+  btn.classList.remove('st-green','st-red','st-yellow');
+  if (stateName === 'green') btn.classList.add('st-green');
+  else if (stateName === 'red') btn.classList.add('st-red');
+  else if (stateName === 'yellow') btn.classList.add('st-yellow');
+  const msg = document.getElementById('connStatusMsg');
+  if (msg) {
+    if (stateName === 'green') {
+      msg.textContent = 'Connection successful'; msg.style.color = 'var(--accent)';
+      state.retryCount = 0;
+    } else if (stateName === 'yellow') {
+      if (isRetry) {
+        state.retryCount = (state.retryCount || 0) + 1;
+        const n = state.retryCount;
+        const suffix = (n%10===1 && n%100!==11) ? 'st' : (n%10===2 && n%100!==12) ? 'nd' : (n%10===3 && n%100!==13) ? 'rd' : 'th';
+        msg.textContent = `Retrying connection attempt — ${n}${suffix} time`;
+      } else {
+        msg.textContent = 'Connection attempt in progress';
+      }
+      msg.style.color = 'var(--warn)';
+    } else if (stateName === 'red') {
+      msg.textContent = 'Connection attempt failed'; msg.style.color = 'var(--danger)';
+    } else { msg.textContent = ''; }
+  }
+  updateStartLock();
+}
+
+function setTestBtnState(stateName) {
+  const btn = document.getElementById('testConnBtn');
+  if (!btn) return;
+  btn.classList.remove('st-green','st-red','st-yellow');
+  if (stateName === 'green') btn.classList.add('st-green');
+  else if (stateName === 'red') btn.classList.add('st-red');
+  else if (stateName === 'yellow') btn.classList.add('st-yellow');
+}
+
+function updateStartLock() {
+  const btn = document.getElementById('connectBtn');
+  const startBtn = document.getElementById('startBtn');
+  if (!btn || !startBtn) return;
+  const isGreen = btn.classList.contains('st-green');
+  if (isGreen) {
+    if (!state.running) startBtn.disabled = false;
+  } else {
+    startBtn.disabled = true;
+  }
+}
+
 async function testConnection() {
   const token     = document.getElementById('maToken').value.trim();
   const accountId = document.getElementById('maAccountId').value.trim();
   if (!token || !accountId) { log('Enter token and account ID first', 'warn'); return; }
   state.token = token; state.accountId = accountId;
   log('Testing REST connection…', 'info');
+  setTestBtnState('yellow');
   const info = await fetchAccountInfo();
   if (info) {
     log('✓ Connection OK — ' + info.name + ' @ ' + info.server, 'ok');
@@ -736,15 +952,56 @@ async function testConnection() {
     applyAccountInfo(info);
     setConnBadge('Connected', 'ok');
     state.connected = true;
+    setTestBtnState('green');
   } else {
     log('✗ Connection failed — verify token & account ID at metaapi.cloud', 'err');
     setConnBadge('Failed', 'err');
+    setTestBtnState('red');
   }
 }
 
 // ──────────────────────────────────────────────────────────────
 //  BOT LOOP
 // ──────────────────────────────────────────────────────────────
+function shutdownApp() {
+  if (!confirm('Turn off TAG Auto-Reinvest? This stops the bot, closes the live data connection, and disables the app until reloaded.')) return;
+  state.running = false;
+  state.cancelledConnect = true;
+  clearInterval(state.intervalTimer);
+  state.intervalTimer = null;
+  clearTimeout(state.wsReconnectTimer);
+  state.wsReconnectTimer = null;
+  stopRestPolling();
+  clearInterval(state.sdkPollTimer);
+  if (metaApiConnection) { try { metaApiConnection.close(); } catch(e) {} metaApiConnection = null; }
+  state.wsOpen = false;
+  state.connected = false;
+  document.getElementById('wsStreamStatus').textContent = 'Offline';
+  document.getElementById('wsStreamStatus').className = 'ws-val';
+  document.getElementById('connBadge').textContent = '● Not Connected';
+  document.getElementById('connBadge').className = 'conn-badge';
+  setStatusPill('stopped');
+  log('Application powered off', 'err');
+  document.querySelectorAll('button, input').forEach(el => el.disabled = true);
+  const offBtn = document.getElementById('offBtn');
+  const startBtnPower = document.getElementById('startBtnPower');
+  if (offBtn) offBtn.style.display = 'none';
+  if (startBtnPower) {
+    document.body.appendChild(startBtnPower);
+    startBtnPower.style.display = 'inline-flex';
+    startBtnPower.disabled = false;
+    startBtnPower.style.position = 'fixed';
+    startBtnPower.style.top = '20px';
+    startBtnPower.style.right = '20px';
+    startBtnPower.style.zIndex = '99999';
+    startBtnPower.style.padding = '14px 30px';
+    startBtnPower.style.fontSize = '1.05rem';
+  }
+  document.body.style.opacity = '0.5';
+  document.body.style.pointerEvents = 'none';
+  startBtnPower.style.pointerEvents = 'auto';
+}
+
 function toggleBot() {
   state.running = !state.running;
   const startBtn = document.getElementById('startBtn');
@@ -762,12 +1019,19 @@ function toggleBot() {
     restartTimer();
   } else {
     setStatusPill('stopped');
-    startBtn.disabled = false;
     stopBtn.disabled  = true;
+    updateStartLock();
     clearInterval(state.intervalTimer);
     state.intervalTimer = null;
+    clearTimeout(state.wsReconnectTimer);
+    stopRestPolling();
+    clearInterval(state.sdkPollTimer);
+    if (metaApiConnection) { try { metaApiConnection.close(); } catch(e) {} metaApiConnection = null; }
+    state.wsOpen = false;
+    document.getElementById('wsStreamStatus').textContent = 'Offline';
+    document.getElementById('wsStreamStatus').className = 'ws-val';
     document.getElementById('cyclesSub').textContent = state.cycleCount + ' cycles — stopped';
-    log('Bot stopped', 'warn');
+    log('Bot stopped — live data stream closed', 'warn');
   }
 }
 
@@ -776,11 +1040,56 @@ function restartTimer() {
   state.intervalTimer = setInterval(runCycle, state.intervalMs);
 }
 
+function refreshLastIntervalDisplay() {
+  const el = document.getElementById('lastIntervalUpdate');
+  if (!el) return;
+  const t = state.lastIntervalUpdateTime;
+  if (!t) { el.textContent = '—'; el.style.color = 'var(--text)'; el.innerHTML = '—'; return; }
+
+  const dateStr = new Date(t).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const ageMs = Date.now() - t;
+  const hourMs = 60*60*1000;
+
+  // "Now" button has no recurring interval, treat it as a 1hr staleness baseline for yellow
+  const intervalMs = state.intervalMs || hourMs;
+  const twentyFourHrMs = 24*hourMs;
+
+  let color = 'var(--text)';
+  let icon = '';
+  if (ageMs > twentyFourHrMs) {
+    color = 'var(--danger)';
+    icon = '<span style="margin-right:4px;">⚠️</span>';
+  } else if (ageMs > intervalMs) {
+    color = 'var(--warn)';
+  }
+  el.style.color = color;
+  el.innerHTML = icon + dateStr;
+}
+
+setInterval(refreshLastIntervalDisplay, 30000);
+
+function runCycleNow() {
+  if (!state.running) {
+    log('Start the bot before running a manual cycle', 'warn');
+    return;
+  }
+  log('Manual cycle triggered (Now)', 'info');
+  runCycle();
+  state.intervalMs = 1440 * 60 * 1000;
+  document.querySelectorAll('.ib').forEach(b=>b.classList.remove('active'));
+  const twentyFourHrBtn = document.querySelector('.ib[onclick="setInterval_(1440,this)"]');
+  if (twentyFourHrBtn) twentyFourHrBtn.classList.add('active');
+  log('Check interval reset to 24 hr default', 'info');
+  if (state.running) restartTimer();
+}
+
 async function runCycle() {
   state.cycleCount++;
   const threshold = parseFloat(document.getElementById('minThr').value) || 0;
   const pct = parseFloat(document.getElementById('pctSlider').value) / 100;
   log('── Cycle #' + state.cycleCount + ' ──', 'neutral');
+  state.lastIntervalUpdateTime = Date.now();
+  refreshLastIntervalDisplay();
 
   // Pull fresh balance from MetaApi REST
   let info = null;
@@ -812,32 +1121,52 @@ async function runCycle() {
   }
 
   if (profit <= 0) { log('No positive profit detected — skipping', 'warn'); addHistory(bal, profit, pct, 0, 'No Profit'); return; }
-  if (profit < threshold) { log(`Profit $${profit.toFixed(2)} below threshold $${threshold} — skipping`, 'warn'); addHistory(bal, profit, pct, 0, 'Below Threshold'); return; }
-  if (pct === 0) { log('Reinvest % = 0 — nothing to reinvest', 'warn'); addHistory(bal, profit, pct, 0, 'Skipped'); return; }
+  if (profit < threshold) { state.availableToReinvest += profit; log(`Profit $${profit.toFixed(2)} below threshold $${threshold} — added to available pool`, 'warn'); addHistory(bal, profit, pct, 0, 'Below Threshold'); updateStats(); return; }
+  if (pct === 0) { state.availableToReinvest += profit; log('Reinvest % = 0 — full profit added to available pool', 'warn'); addHistory(bal, profit, pct, 0, 'Skipped'); updateStats(); return; }
 
   const amount = parseFloat((profit * pct).toFixed(2));
   const copyx  = document.getElementById('tog1').checked;
   const sonic  = document.getElementById('tog2').checked;
-  if (!copyx && !sonic) { log('All strategies disabled', 'warn'); addHistory(bal, profit, pct, amount, 'No Strategy'); return; }
+  if (!copyx && !sonic) { state.availableToReinvest += profit; log('All strategies disabled — full profit added to available pool', 'warn'); addHistory(bal, profit, pct, amount, 'No Strategy'); updateStats(); return; }
 
   log(`Reinvesting $${amount.toFixed(2)} (${(pct*100).toFixed(0)}% of $${profit.toFixed(2)})`, 'ok');
   if (copyx) log('→ CopyX: increasing copy allocation', 'ok');
   if (sonic) log('→ Sonic Strategy: forwarding signal', 'ok');
 
-  // If WebSocket is live, send a deposit-type order via MetaApi
-  if (state.wsOpen && state.ws && state.accountId) {
+  // [SDK] If the MetaApi SDK connection is live, this is where a real
+  // trade/reinvest action would be sent. MetaApi has no single "reinvest"
+  // endpoint, so actual implementation will likely use the CopyFactory
+  // API (for copy-trading allocation) via metaApiConnection, once we
+  // decide exactly how reinvestment should be executed on the account.
+  if (state.wsOpen && metaApiConnection && state.accountId) {
     const reqId = 'reinvest-' + Date.now();
-    // MetaApi doesn't have a "reinvest" endpoint — log the action
-    // Real implementation: use MetaApi CopyFactory API to adjust equity allocation
-    log(`MetaApi WS: broadcasting reinvest event (id: ${reqId.slice(-8)})`, 'info');
-    // state.ws.send(JSON.stringify({ type: 'trade', ... })); // for actual trade placement
+    log(`MetaApi SDK: broadcasting reinvest event (id: ${reqId.slice(-8)})`, 'info');
+    // TODO: metaApiConnection.createOrder(...) / CopyFactory allocation call goes here
   }
 
   state.totalReinvested += amount;
+  state.availableToReinvest += (profit - amount);
   state.prevBalance = bal; // reset delta baseline
+  state.lastReinvestAmount = amount;
+  state.lastReinvestDate = new Date();
   updateStats();
   addHistory(bal, profit, pct, amount, 'Reinvested');
+  addReinvestLog(amount, state.lastReinvestDate);
+  document.getElementById('lastReinvestVal').textContent = '$' + amount.toFixed(2);
+  document.getElementById('lastReinvestDate').textContent = state.lastReinvestDate.toLocaleString();
   log(`✓ Done. Session total: $${state.totalReinvested.toFixed(2)}`, 'ok');
+}
+
+let reinvestLogFirst = true;
+function addReinvestLog(amount, date) {
+  const box = document.getElementById('reinvestLogBox');
+  if (reinvestLogFirst) { box.innerHTML = ''; reinvestLogFirst = false; }
+  const row = document.createElement('div');
+  row.className = 'll';
+  row.innerHTML = `<span class="lt">${date.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span><span class="lm ok">Reinvested $${amount.toFixed(2)} — ${date.toLocaleDateString()}</span>`;
+  box.appendChild(row);
+  while (box.children.length > MAX_LOG_ROWS) box.removeChild(box.firstChild);
+  box.scrollTop = box.scrollHeight;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -856,10 +1185,14 @@ function addHistory(bal, profit, pct, amount, status) {
   const tr = document.createElement('tr');
   tr.innerHTML=`<td>${now}</td><td>${platform}</td><td>$${bal?bal.toFixed(2):'—'}</td><td>${profit>=0?'+':''}$${profit.toFixed(2)}</td><td>${(pct*100).toFixed(0)}%</td><td>${amount>0?'$'+amount.toFixed(2):'—'}</td><td><span class="badge ${cls}">${status}</span></td>`;
   tbody.insertBefore(tr, tbody.firstChild);
+  while (tbody.children.length > MAX_LOG_ROWS) tbody.removeChild(tbody.lastChild);
 }
 
 // init
 updateStats();
+onCopyXToggle();
+updateStartLock();
+refreshLastIntervalDisplay();
 </script>
 </body>
 </html>
